@@ -8,9 +8,15 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "next build"
+
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "yussuf253",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "digtor-app"
+  }
 }
