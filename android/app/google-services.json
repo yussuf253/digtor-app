@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "892066469328",
+    "project_id": "digtor253",
+    "storage_bucket": "digtor253.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:892066469328:android:a888cf99fcf703c2da55d5",
+        "android_client_info": {
+          "package_name": "com.digtor.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJxkRGKbbqH59qzKflwYBZfufx8dtYs_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

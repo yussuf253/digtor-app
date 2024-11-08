@@ -1,0 +1,11 @@
+specVersion: "v1alpha"
+serviceId: "digtor253"
+location: "asia-south1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "fdc-sql"
+connectorDirs: ["./default"]
