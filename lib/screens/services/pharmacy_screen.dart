@@ -1,162 +1,61 @@
 import 'package:flutter/material.dart';
 
-class PharmacyScreen extends StatelessWidget {
+import '../../services/firestore_service.dart';
+
+class PharmacyScreen extends StatefulWidget {
   const PharmacyScreen({super.key});
+
+  @override
+  State<PharmacyScreen> createState() => _PharmacyScreenState();
+}
+
+class _PharmacyScreenState extends State<PharmacyScreen> {
+  final FirestoreService _firestoreService = FirestoreService();
+  List<Map<String, dynamic>> _pharmacies = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPharmacies();
+  }
+
+  Future<void> _loadPharmacies() async {
+    try {
+      final pharmacies = await _firestoreService.getPharmacies();
+      setState(() {
+        _pharmacies = pharmacies;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading pharmacies: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Pharmacy',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: const Text('Pharmacies'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          // Barre de recherche
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: _pharmacies.length,
+              itemBuilder: (context, index) {
+                final pharmacy = _pharmacies[index];
+                return _buildPharmacyCard(
+                  name: pharmacy['name'],
+                  address: pharmacy['address'],
+                  distance: pharmacy['distance'],
+                  isOpen: pharmacy['isOpen'],
+                  rating: pharmacy['rating'].toDouble(),
+                );
+              },
             ),
-            child: Row(
-              children: [
-                Icon(Icons.search, color: Colors.grey[400]),
-                const SizedBox(width: 12),
-                Text(
-                  'Search medicines, pharmacy...',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Catégories
-          const Text(
-            'Categories',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildCategoryCard(
-                  icon: Icons.medication,
-                  label: 'Medicine',
-                  color: Colors.blue,
-                ),
-                _buildCategoryCard(
-                  icon: Icons.healing,
-                  label: 'Vitamins',
-                  color: Colors.orange,
-                ),
-                _buildCategoryCard(
-                  icon: Icons.sanitizer,
-                  label: 'Personal Care',
-                  color: Colors.purple,
-                ),
-                _buildCategoryCard(
-                  icon: Icons.baby_changing_station,
-                  label: 'Baby Care',
-                  color: Colors.pink,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Pharmacies à proximité
-          const Text(
-            'Nearby Pharmacies',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildPharmacyCard(
-            name: 'HealthCare Pharmacy',
-            address: '123 Medical Street',
-            distance: '500m away',
-            isOpen: true,
-            rating: 4.8,
-          ),
-          const SizedBox(height: 16),
-          _buildPharmacyCard(
-            name: 'MediPlus Drugstore',
-            address: '456 Health Avenue',
-            distance: '1.2km away',
-            isOpen: true,
-            rating: 4.5,
-          ),
-          const SizedBox(height: 16),
-          _buildPharmacyCard(
-            name: 'City Pharmacy',
-            address: '789 Care Road',
-            distance: '2.1km away',
-            isOpen: false,
-            rating: 4.6,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryCard({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 32,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
