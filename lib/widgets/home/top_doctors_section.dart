@@ -27,8 +27,7 @@ class TopDoctorsSection extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          const TopDoctorScreen(), // Liste complète des docteurs
+                      builder: (context) => const TopDoctorScreen(),
                     ),
                   );
                 },
@@ -50,7 +49,7 @@ class TopDoctorsSection extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const DoctorProfileScreen(
-                    doctorName: 'Dr. Marcus Horizon',
+                    name: 'Dr. Marcus Horizon',
                     specialty: 'Chardiologist',
                     rating: 4.7,
                     distance: '800m away',
@@ -70,7 +69,7 @@ class TopDoctorsSection extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const DoctorProfileScreen(
-                    doctorName: 'Dr. Maria Elena',
+                    name: 'Dr. Maria Elena',
                     specialty: 'Psychologist',
                     rating: 4.9,
                     distance: '1.2km away',

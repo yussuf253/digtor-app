@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class DoctorProfileScreen extends StatelessWidget {
-  final String doctorName;
+  final String name;
   final String specialty;
   final double rating;
   final String distance;
 
   const DoctorProfileScreen({
     super.key,
-    required this.doctorName,
+    required this.name,
     required this.specialty,
     required this.rating,
     required this.distance,

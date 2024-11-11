@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import '../widgets/doctor/doctor_card.dart';
+import '../constants/app_colors.dart';
+import '../screens/doctor_profile_screen.dart';
+import '../screens/pharmacy_profile_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final String? initialSearchType;
+
+  const SearchScreen({
+    super.key,
+    this.initialSearchType,
+  });
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -11,6 +19,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late String? _currentSearchType;
 
   // Données de démonstration
   final List<Map<String, dynamic>> _doctors = [
@@ -54,193 +63,55 @@ class _SearchScreenState extends State<SearchScreen> {
     },
   ];
 
-  final List<Map<String, dynamic>> _drugs = [
-    {
-      'name': 'Paracetamol',
-      'category': 'Pain Relief',
-      'price': '\$5.99',
-    },
-    {
-      'name': 'Amoxicillin',
-      'category': 'Antibiotics',
-      'price': '\$12.99',
-    },
-  ];
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: TextField(
-          controller: _searchController,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: 'Search doctor, drugs, articles...',
-            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 16),
-            border: InputBorder.none,
-          ),
-          onChanged: (value) {
-            setState(() {
-              _searchQuery = value;
-            });
-          },
-        ),
-        actions: [
-          if (_searchQuery.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.clear, color: Colors.black),
-              onPressed: () {
-                _searchController.clear();
-                setState(() {
-                  _searchQuery = '';
-                });
-              },
-            ),
-        ],
-      ),
-      body: _searchQuery.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.search,
-                    size: 100,
-                    color: Colors.grey[300],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Search for doctors, hospitals,\npharmacies, or drugs',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                _buildSearchResults(),
-              ],
-            ),
-    );
+  void initState() {
+    super.initState();
+    _currentSearchType = widget.initialSearchType;
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
   }
 
-  Widget _buildSearchResults() {
+  List<Map<String, dynamic>> _getFilteredResults() {
     final query = _searchQuery.toLowerCase();
 
-    // Filtrer les résultats
-    final doctors = _doctors
-        .where((d) =>
-            d['name'].toString().toLowerCase().contains(query) ||
-            d['specialty'].toString().toLowerCase().contains(query))
-        .toList();
+    if (_searchQuery.isEmpty) {
+      switch (_currentSearchType) {
+        case 'doctors':
+          return _doctors;
+        case 'hospitals':
+          return _hospitals;
+        case 'pharmacies':
+          return _pharmacies;
+        default:
+          return [..._doctors, ..._hospitals, ..._pharmacies];
+      }
+    }
 
-    final hospitals = _hospitals
-        .where((h) =>
-            h['name'].toString().toLowerCase().contains(query) ||
-            h['type'].toString().toLowerCase().contains(query))
-        .toList();
-
-    final pharmacies = _pharmacies
-        .where((p) =>
-            p['name'].toString().toLowerCase().contains(query) ||
-            p['status'].toString().toLowerCase().contains(query))
-        .toList();
-
-    final drugs = _drugs
-        .where((d) =>
-            d['name'].toString().toLowerCase().contains(query) ||
-            d['category'].toString().toLowerCase().contains(query))
-        .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (doctors.isNotEmpty) ...[
-          _buildSectionTitle('Doctors'),
-          ...doctors.map((doctor) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: DoctorCard(
-                  name: doctor['name'],
-                  specialty: doctor['specialty'],
-                  distance: doctor['distance'],
-                  rating: doctor['rating'],
-                  onTap: () => Navigator.pop(context),
-                ),
-              )),
-        ],
-        if (hospitals.isNotEmpty) ...[
-          _buildSectionTitle('Hospitals'),
-          ...hospitals.map((hospital) => _buildListItem(
-                title: hospital['name'],
-                subtitle: hospital['type'],
-                trailing: hospital['distance'],
-                icon: Icons.local_hospital_outlined,
-                color: Colors.orange,
-              )),
-        ],
-        if (pharmacies.isNotEmpty) ...[
-          _buildSectionTitle('Pharmacies'),
-          ...pharmacies.map((pharmacy) => _buildListItem(
-                title: pharmacy['name'],
-                subtitle: pharmacy['status'],
-                trailing: pharmacy['distance'],
-                icon: Icons.local_pharmacy_outlined,
-                color: Colors.green,
-              )),
-        ],
-        if (drugs.isNotEmpty) ...[
-          _buildSectionTitle('Drugs'),
-          ...drugs.map((drug) => _buildListItem(
-                title: drug['name'],
-                subtitle: drug['category'],
-                trailing: drug['price'],
-                icon: Icons.medication_outlined,
-                color: Colors.blue,
-              )),
-        ],
-        if (doctors.isEmpty &&
-            hospitals.isEmpty &&
-            pharmacies.isEmpty &&
-            drugs.isEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 32),
-              child: Text(
-                'No results found for "$_searchQuery"',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+    switch (_currentSearchType) {
+      case 'doctors':
+        return _doctors
+            .where((d) =>
+                d['name'].toString().toLowerCase().contains(query) ||
+                d['specialty'].toString().toLowerCase().contains(query))
+            .toList();
+      case 'hospitals':
+        return _hospitals
+            .where((h) =>
+                h['name'].toString().toLowerCase().contains(query) ||
+                h['type'].toString().toLowerCase().contains(query))
+            .toList();
+      case 'pharmacies':
+        return _pharmacies
+            .where((p) =>
+                p['name'].toString().toLowerCase().contains(query) ||
+                p['status'].toString().toLowerCase().contains(query))
+            .toList();
+      default:
+        return [];
+    }
   }
 
   Widget _buildListItem({
@@ -249,6 +120,7 @@ class _SearchScreenState extends State<SearchScreen> {
     required String trailing,
     required IconData icon,
     required Color color,
+    required Function() onTap,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -280,8 +152,164 @@ class _SearchScreenState extends State<SearchScreen> {
             fontSize: 13,
           ),
         ),
-        onTap: () => Navigator.pop(context),
+        onTap: onTap,
       ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    final results = _getFilteredResults();
+
+    if (results.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 32),
+          child: Text(
+            'No results found for "$_searchQuery"',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
+    }
+
+    switch (_currentSearchType) {
+      case 'doctors':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: results
+              .map((doctor) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DoctorCard(
+                      name: doctor['name'],
+                      specialty: doctor['specialty'],
+                      distance: doctor['distance'],
+                      rating: doctor['rating'],
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DoctorProfileScreen(
+                              name: doctor['name'],
+                              specialty: doctor['specialty'],
+                              rating: doctor['rating'],
+                              distance: doctor['distance'],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ))
+              .toList(),
+        );
+      case 'hospitals':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: results
+              .map((hospital) => _buildListItem(
+                    title: hospital['name'],
+                    subtitle: hospital['type'],
+                    trailing: hospital['distance'],
+                    icon: Icons.local_hospital_outlined,
+                    color: Colors.orange,
+                    onTap: () {},
+                  ))
+              .toList(),
+        );
+      case 'pharmacies':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: results
+              .map((pharmacy) => _buildListItem(
+                    title: pharmacy['name'],
+                    subtitle: pharmacy['status'],
+                    trailing: pharmacy['distance'],
+                    icon: Icons.local_pharmacy_outlined,
+                    color: Colors.green,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PharmacyProfileScreen(
+                            name: pharmacy['name'],
+                            status: pharmacy['status'],
+                            distance: pharmacy['distance'],
+                          ),
+                        ),
+                      );
+                    },
+                  ))
+              .toList(),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText:
+                'Search ${_currentSearchType ?? "doctor, drugs, articles..."}',
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 16),
+            border: InputBorder.none,
+          ),
+        ),
+        actions: [
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear, color: Colors.black),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+            ),
+        ],
+      ),
+      body: _searchQuery.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search,
+                    size: 100,
+                    color: Colors.grey[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Search for ${_currentSearchType ?? "doctors, hospitals, pharmacies"}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                _buildSearchResults(),
+              ],
+            ),
     );
   }
 
